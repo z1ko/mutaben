@@ -2,7 +2,8 @@
 import unittest as ut
 import numpy as np
 
-from mba import *
+from generator import MBAGenerator
+from bexpr import BExpr
 
 # Test boolean expression used in the generator
 EXPRS = [
@@ -26,7 +27,7 @@ class TestMBAGenerator(ut.TestCase):
         RNG_STO_COUNT = 100
         RNG_MAX_INPUT = 10000
         
-        generator = Generator(EXPRS)
+        generator = MBAGenerator(EXPRS)
         for identity in generator.identities(max_coeff=GEN_MAX_COEFF, count=GEN_MBA_COUNT, check_identity=False):
             self.assertTrue(identity.is_zero_identity())
 
