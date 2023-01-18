@@ -19,8 +19,10 @@ EXPRS = [
     BExpr("1",       lambda vars: 1)
 ]
 
-class TestMBAGenerator(ut.TestCase):
-    def test_zero_identities(self):
+class TestLibrary(ut.TestCase):
+
+    # Controlla che le identità generate siano corrette
+    def test_generator_identities(self):
         
         GEN_MAX_COEFF = 100000
         GEN_MBA_COUNT = 10
