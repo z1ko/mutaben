@@ -13,7 +13,7 @@ EXPRS = [
     BExpr("~x",      lambda vars: ~vars[0]),
     BExpr("~y",      lambda vars: ~vars[1]),
     BExpr("~x ^ ~y", lambda vars: ~vars[0] ^ ~vars[1]),
-    BExpr("1",       lambda vars: 1)
+    BExpr("1",       lambda vars: -1)
 ]
 
 if __name__ == "__main__":

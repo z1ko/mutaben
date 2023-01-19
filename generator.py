@@ -60,4 +60,33 @@ class MBAGenerator:
     # Genera delle MBA che si comportano allo stesso modo rispetto 
     # ad una generica funzione booleana
     def mutate(self, expr: BExpr):
-        pass
+        A = self.matrix()
+
+        # Genera vettore binario di risposta all'input
+        b = sp.zeros(pow(2,expr.size), 1)
+        for i, bits in enumerate(utils.get_bits_seq(pow(2, expr.size))):
+            b[i] = expr.func(bits)
+
+        # Genera simboli per ogni espressioni booleana utilizzabile
+        symbols = []
+        for i in range(len(self.exprs)):
+            symbols.append(sp.symbols("e%d" % i))
+
+        # Risolve sistema indeterminato, ottenendo uno spazio delle soluzioni
+        solution = sp.linsolve((A, b), symbols).args[0]
+        
+        # Ottiene soluzione randomica
+        coef = np.random.randint(10, size=len(self.exprs))
+        subs = [ ("e%d" % i, coef[i]) for i in range(len(self.exprs))]
+        solution = solution.subs(subs)
+        #print(solution)
+
+        # Genera MBA
+        mba = MBAExpr()
+        for i, bexp in enumerate(self.exprs):
+            coeff = solution[i]
+            if coeff != 0:
+                mba.add_term(coeff, bexp)
+
+        assert(mba.is_mutation(expr))
+        mba.print()

@@ -38,3 +38,16 @@ class MBAExpr:
             if not self.evaluate(bits) == 0:
                 return False
         return True
+
+    # Controlla che la MBA si comporti come expr
+    def is_mutation(self, expr: BExpr):
+        _, bexpr = self.elements[0]
+        for bits in utils.get_bits_seq(pow(2, bexpr.size)):
+
+            val1, val2 = self.evaluate(bits), expr.func(bits)
+            #print(f"MBA({bits}) = {val1}, F({bits}) = {val2}")
+
+            if not val1 == val2:
+                return False
+
+        return True

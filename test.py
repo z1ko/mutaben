@@ -1,6 +1,7 @@
 
 import unittest as ut
 import numpy as np
+import sympy as sp
 
 from generator import MBAGenerator
 from bexpr import BExpr
@@ -37,6 +38,14 @@ class TestLibrary(ut.TestCase):
             for _ in range(RNG_STO_COUNT):
                 vars = np.random.randint(RNG_MAX_INPUT, size=2)
                 self.assertEqual(0, identity.evaluate(vars))
+
+    # Controlla che le mutazioni siano corrette
+    def test_generator_mutate(self):
+        generator = MBAGenerator(EXPRS)
+
+        expr = BExpr("...", lambda bits: (~bits[0] & ~bits[1]) | (bits[0] & bits[1]))
+        for i in range(10):
+            generator.mutate(expr)
 
 
 if __name__ == "__main__":
