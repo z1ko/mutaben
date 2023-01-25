@@ -122,30 +122,3 @@ class MBAGenerator:
 
         assert(mba.is_mutation_affine(terms, offset))
         return mba
-
-
-
-EXPRS = [
-    BExpr("x",       lambda vars:  vars[0]),
-    BExpr("y",       lambda vars:  vars[1]),
-    BExpr("x & y",   lambda vars:  vars[0] &  vars[1]),
-    BExpr("x | ~y",  lambda vars:  vars[0] | ~vars[1]),
-    BExpr("x ^ y",   lambda vars:  vars[0] ^  vars[1]),
-    BExpr("~x & ~y", lambda vars: ~vars[0] & ~vars[1]),
-    BExpr("~x",      lambda vars: ~vars[0]),
-    BExpr("~y",      lambda vars: ~vars[1]),
-    BExpr("~x ^ ~y", lambda vars: ~vars[0] ^ ~vars[1]),
-    BExpr("1",       lambda vars: 1)
-]
-
-generator = MBAGenerator(EXPRS)
-
-offset = 0
-affine = [
-    (4, BExpr("", lambda vars:  vars[0] ^ ~vars[1])),
-    (6, BExpr("", lambda vars: ~vars[0] |  vars[1])),
-    (9, BExpr("", lambda vars: ~vars[0] & ~vars[1]))
-]
-
-mba = generator.mutate_affine(affine, offset)
-mba.print()
