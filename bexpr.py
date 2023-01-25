@@ -1,5 +1,14 @@
 
+import numpy as np
 import utils
+
+# Funzione comoda per valutare combinazioni affini
+def evaluate_affine(vars, terms, offset):
+    result = offset
+    for term in terms:
+        result += term[0] * term[1].func(vars)
+    return result
+
 
 # Rappresenta una generica espressione booleana
 class BExpr:
@@ -7,6 +16,7 @@ class BExpr:
         self.text = text
         self.func = func
         self.size = size
+
 
 # Rappresenta una espressione in mixed-boolean-arithmetic   
 class MBAExpr:
@@ -18,10 +28,12 @@ class MBAExpr:
 
     # Visualizza la MBA in un formato leggibile
     def print(self):
+        print("{ ", end='')
         for (coef, expr) in self.elements:
-            sign = '-' if coef < 0 else '+'
-            print(f"{sign} {abs(coef)} * ({expr.text}) ", end='')
-        print("")
+            #sign = '-' if coef < 0 else '+'
+            #print(f"{sign} {abs(coef)} * ({expr.text}) ", end='')
+            print(f"({coef}, {expr.text}), ", end='')
+        print("}")
 
     # Valuta la MBA date le variabili
     def evaluate(self, vars):
@@ -37,6 +49,12 @@ class MBAExpr:
         for bits in utils.get_bits_seq(pow(2, bexpr.size)):
             if not self.evaluate(bits) == 0:
                 return False
+
+        for _ in range(100):
+            vars = np.random.randint(10000, size=2)
+            if self.evaluate(vars) != 0:
+                return False
+
         return True
 
     # Controlla che la MBA si comporti come expr
@@ -44,10 +62,38 @@ class MBAExpr:
         _, bexpr = self.elements[0]
         for bits in utils.get_bits_seq(pow(2, bexpr.size)):
 
-            val1, val2 = self.evaluate(bits), expr.func(bits)
-            #print(f"MBA({bits}) = {val1}, F({bits}) = {val2}")
+            eval1 = self.evaluate(bits)
+            eval2 = expr.func(bits)
 
-            if not val1 == val2:
+            #print(f"Evaluate: {eval1} vs {eval2}")
+            if eval1 != eval2:
                 return False
 
+        # Controllo stocastico
+        for _ in range(100):
+            vars = np.random.randint(10000, size=2)
+            if self.evaluate(vars) != expr.func(vars):
+                return False
+
+        return True
+
+    # Controlla che la MBA si comporto come una combinazione affine
+    def is_mutation_affine(self, terms, offset):
+
+        _, bexpr = self.elements[0]
+        for bits in utils.get_bits_seq(pow(2, bexpr.size)):
+
+            eval1 = self.evaluate(bits)
+            eval2 = evaluate_affine(bits, terms, offset)
+
+            #print(f"Evaluate: {eval1} vs {eval2}")
+            if eval1 != eval2:
+                return False
+
+        # Controllo stocastico
+        for _ in range(100):
+            vars = np.random.randint(10000, size=2)
+            if self.evaluate(vars) != evaluate_affine(vars, terms, offset):
+                return False
+        
         return True

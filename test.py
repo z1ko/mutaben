@@ -4,15 +4,15 @@ import numpy as np
 import sympy as sp
 
 from generator import MBAGenerator
-from bexpr import BExpr
+from bexpr import BExpr, evaluate_affine
 
 # Test boolean expression used in the generator
 EXPRS = [
-    BExpr("x",       lambda vars: vars[0]),
-    BExpr("y",       lambda vars: vars[1]),
-    BExpr("x & y",   lambda vars: vars[0] & vars[1]),
-    BExpr("x | ~y",  lambda vars: vars[0] | ~vars[1]),
-    BExpr("x ^ y",   lambda vars: vars[0] ^ vars[1]),
+    BExpr("x",       lambda vars:  vars[0]),
+    BExpr("y",       lambda vars:  vars[1]),
+    BExpr("x & y",   lambda vars:  vars[0] &  vars[1]),
+    BExpr("x | ~y",  lambda vars:  vars[0] | ~vars[1]),
+    BExpr("x ^ y",   lambda vars:  vars[0] ^  vars[1]),
     BExpr("~x & ~y", lambda vars: ~vars[0] & ~vars[1]),
     BExpr("~x",      lambda vars: ~vars[0]),
     BExpr("~y",      lambda vars: ~vars[1]),
@@ -39,13 +39,51 @@ class TestLibrary(ut.TestCase):
                 vars = np.random.randint(RNG_MAX_INPUT, size=2)
                 self.assertEqual(0, identity.evaluate(vars))
 
+
     # Controlla che le mutazioni siano corrette
     def test_generator_mutate(self):
         generator = MBAGenerator(EXPRS)
 
         expr = BExpr("...", lambda bits: (~bits[0] & ~bits[1]) | (bits[0] & bits[1]))
         for i in range(10):
-            generator.mutate(expr)
+            mba = generator.mutate(expr)
+            self.assertTrue(mba.is_mutation(expr))
+
+
+    # Controlla che le mutazioni di combinazioni lineari siano corrette
+    def test_generator_mutate_linear(self):
+        generator = MBAGenerator(EXPRS)
+        terms = [
+            (4, BExpr("", lambda vars:  vars[0] ^ ~vars[1])),
+            (6, BExpr("", lambda vars: ~vars[0] |  vars[1])),
+            (9, BExpr("", lambda vars: ~vars[0] & ~vars[1]))
+        ]
+    
+        for i in range(100):
+            mba = generator.mutate_affine(terms, 0)
+            mba.print()
+
+            vars = np.random.randint(0, 1001, size=2)
+            self.assertTrue(mba.evaluate(vars) == evaluate_affine(vars, terms, 0))
+
+    
+    # Controllo mutazione su somme semplice di variabili
+    def test_generator_mutate_linear_simple(self):
+        generator = MBAGenerator(EXPRS)
+        terms = [
+            (1, BExpr("x", lambda vars: vars[0])),
+            (1, BExpr("y", lambda vars: vars[1])),
+        ]
+
+        for i in range(100):
+            mba = generator.mutate_affine(terms, 0)
+            mba.print()
+
+            vars = np.random.randint(0, 1001, size=2)
+            self.assertTrue(mba.evaluate(vars) == vars[0] + vars[1])
+
+
+
 
 
 if __name__ == "__main__":

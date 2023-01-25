@@ -89,4 +89,63 @@ class MBAGenerator:
                 mba.add_term(coeff, bexp)
 
         assert(mba.is_mutation(expr))
-        mba.print()
+        return mba
+
+    # Genera una MBA che simula una combinazione affine
+    def mutate_affine(self, terms, offset):
+        A = self.matrix()
+
+        # Genera vettore binario di risposta all'input
+        b = sp.zeros(pow(2, terms[0][1].size), 1)
+        for i, bits in enumerate(utils.get_bits_seq(pow(2, terms[0][1].size))):
+            b[i] = -offset
+            for term in terms:
+                b[i] += term[0] * term[1].func(bits)
+
+        # Genera simboli per ogni espressioni booleana utilizzabile
+        symbols = []
+        for i in range(len(self.exprs)):
+            symbols.append(sp.symbols("e%d" % i))
+
+        # Risolve sistema indeterminato, ottenendo uno spazio delle soluzioni
+        solution = sp.linsolve((A, b), symbols).args[0]
+
+        coef = np.random.randint(10, size=len(self.exprs))
+        subs = [ ("e%d" % i, coef[i]) for i in range(len(self.exprs))]
+        solution = solution.subs(subs)
+
+        mba = MBAExpr()
+        for i, bexp in enumerate(self.exprs):
+            coeff = solution[i]
+            if coeff != 0:
+                mba.add_term(coeff, bexp)
+
+        assert(mba.is_mutation_affine(terms, offset))
+        return mba
+
+
+
+EXPRS = [
+    BExpr("x",       lambda vars:  vars[0]),
+    BExpr("y",       lambda vars:  vars[1]),
+    BExpr("x & y",   lambda vars:  vars[0] &  vars[1]),
+    BExpr("x | ~y",  lambda vars:  vars[0] | ~vars[1]),
+    BExpr("x ^ y",   lambda vars:  vars[0] ^  vars[1]),
+    BExpr("~x & ~y", lambda vars: ~vars[0] & ~vars[1]),
+    BExpr("~x",      lambda vars: ~vars[0]),
+    BExpr("~y",      lambda vars: ~vars[1]),
+    BExpr("~x ^ ~y", lambda vars: ~vars[0] ^ ~vars[1]),
+    BExpr("1",       lambda vars: 1)
+]
+
+generator = MBAGenerator(EXPRS)
+
+offset = 0
+affine = [
+    (4, BExpr("", lambda vars:  vars[0] ^ ~vars[1])),
+    (6, BExpr("", lambda vars: ~vars[0] |  vars[1])),
+    (9, BExpr("", lambda vars: ~vars[0] & ~vars[1]))
+]
+
+mba = generator.mutate_affine(affine, offset)
+mba.print()
