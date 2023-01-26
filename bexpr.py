@@ -4,10 +4,7 @@ import utils
 
 # Funzione comoda per valutare combinazioni affini
 def evaluate_affine(vars, terms, offset):
-    result = offset
-    for term in terms:
-        result += term[0] * term[1].func(vars)
-    return result
+    return sum(map(lambda term: term[0] * term[1].func(vars), terms)) + offset
 
 
 # Rappresenta una generica espressione booleana

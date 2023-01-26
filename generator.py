@@ -96,11 +96,11 @@ class MBAGenerator:
         A = self.matrix()
 
         # Genera vettore binario di risposta all'input
+        # NB: L'algoritmo è diverso da quello presentato nel paper, qui viene direttamente
+        # sommato il valore di offset e non sottratto, non ho idea del perché
         b = sp.zeros(pow(2, terms[0][1].size), 1)
         for i, bits in enumerate(utils.get_bits_seq(pow(2, terms[0][1].size))):
-            b[i] = -offset
-            for term in terms:
-                b[i] += term[0] * term[1].func(bits)
+            b[i] = sum(map(lambda term: term[0] * term[1].func(bits), terms)) + offset
 
         # Genera simboli per ogni espressioni booleana utilizzabile
         symbols = []
