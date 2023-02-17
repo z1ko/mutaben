@@ -1,5 +1,5 @@
 
-# Mutaba - Mixed Boolean Arithmetic Generator
+# Mufasa - Mixed Boolean Arithmetic Generator
 
 ![Banner](banner.png)
 
